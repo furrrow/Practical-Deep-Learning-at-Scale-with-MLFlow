@@ -21,7 +21,7 @@ os.environ["MLFLOW_TRACKING_URI"] = "http://localhost"
 
 # COMMAND ----------
 
-download_data("https://pl-flash-data.s3.amazonaws.com/imdb.zip", "./data/")
+download_data("https://pl-flash-data.s3.amazonaws.com/imdb.zip", "../../data/")
 datamodule = TextClassificationData.from_csv(
     input_fields="review",
     target_fields="sentiment",

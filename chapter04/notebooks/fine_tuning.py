@@ -18,9 +18,10 @@ os.environ["MLFLOW_S3_ENDPOINT_URL"] = "http://localhost:9000"
 os.environ["MLFLOW_TRACKING_URI"] = "http://localhost"
 
 # %%
-download_data("https://pl-flash-data.s3.amazonaws.com/imdb.zip", "./data/")
+download_data("https://pl-flash-data.s3.amazonaws.com/imdb.zip", "../../data/")
 datamodule = TextClassificationData.from_csv(
-    input_fields="review",
+    input_field="review",
+    batch_size=128,
     target_fields="sentiment",
     train_file="data/imdb/train.csv",
     val_file="data/imdb/valid.csv",
@@ -30,7 +31,8 @@ datamodule = TextClassificationData.from_csv(
 
 # %%
 classifier_model = TextClassifier(backbone="prajjwal1/bert-tiny",
-                                  num_classes=datamodule.num_classes, metrics=torchmetrics.F1(datamodule.num_classes))
+                                  num_classes=datamodule.num_classes, 
+                                  metrics=torchmetrics.classification.F1Score(datamodule.num_classes))
 trainer = flash.Trainer(max_epochs=3, gpus=torch.cuda.device_count())
 
 
@@ -46,7 +48,7 @@ REGISTERED_MODEL_NAME = 'dl_finetuned_model'
 mlflow.pytorch.autolog()
 with mlflow.start_run(experiment_id=experiment.experiment_id, run_name="chapter04") as dl_model_tracking_run:
     trainer.finetune(classifier_model, datamodule=datamodule, strategy="freeze")
-    trainer.test()
+    trainer.test(datamodule=datamodule)
 
     # mlflow log additional hyper-parameters used in this training
     mlflow.log_params(classifier_model.hparams)
@@ -62,3 +64,5 @@ print("run_id: {}; lifecycle_stage: {}".format(run_id,
 # register the fine-tuned model
 logged_model = f'runs:/{run_id}/model'
 mlflow.register_model(logged_model, REGISTERED_MODEL_NAME)
+
+# %%
