@@ -11,7 +11,7 @@ entry_points:
     parameters:
       download_url:
         { type: str, default: https://pl-flash-data.s3.amazonaws.com/imdb.zip }
-      local_folder: { type: str, default: ./data }
+      local_folder: { type: str, default: ../data }
       pipeline_run_name: { type: str, default: chapter06 }
     command:
       "python pipeline/download_data.py --download_url {download_url} --local_folder {local_folder} \

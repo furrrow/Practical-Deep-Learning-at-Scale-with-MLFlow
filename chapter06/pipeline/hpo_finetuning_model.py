@@ -4,6 +4,7 @@ import flash
 import mlflow
 import torchmetrics
 from flash.text import TextClassificationData, TextClassifier
+from pathlib import Path
 
 from ray import tune
 from ray.tune.integration.mlflow import mlflow_mixin
@@ -24,7 +25,6 @@ def finetuning_dl_model(config, data_dir=None, num_epochs=3, num_gpus=0):
         batch_size=config['batch_size']
     )
 
-
     classifier_model = TextClassifier(backbone=config['foundation_model'],
                                       learning_rate=config['lr'],
                                       optimizer=config['optimizer_type'],
@@ -39,17 +39,20 @@ def finetuning_dl_model(config, data_dir=None, num_epochs=3, num_gpus=0):
                             callbacks=[TuneReportCallback(metrics, on='validation_end')])
     
     trainer.finetune(classifier_model, datamodule=datamodule, strategy=config['finetuning_strategies'])
-    mlflow.log_param('batch_size',config['batch_size'])
+    mlflow.log_param('batch_size', config['batch_size'])
     mlflow.set_tag('pipeline_step', __file__)
 
 
-def run_hpo_dl_model(num_samples=10,
+def run_hpo_dl_model(num_samples=1,
                      num_epochs=3,
-                     gpus_per_trial=0,
+                     gpus_per_trial=0.5,
                      tracking_uri=None,
                      experiment_name="hpo-tuning-chapter06"):
 
-    data_dir = os.path.join(os.getcwd(), "data")
+    # data_dir = os.path.join(os.getcwd(), "data")
+    data_dir = os.getcwd()
+    data_dir = Path(data_dir).parents[1]
+    data_dir = os.path.join(data_dir, "data")
 
     # Set the MLflow experiment, or create it if it does not exist.
     mlflow.set_tracking_uri(tracking_uri)

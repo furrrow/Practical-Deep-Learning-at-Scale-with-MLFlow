@@ -46,7 +46,6 @@ def run_pipeline(pipeline_steps):
             logger.info('downloaded data is located locally in folder: %s', file_path_uri)
             logger.info(download_run)
 
-
     logger.info('finished mlflow pipeline run with a run_id = %s', active_run.info.run_id)
 
 
